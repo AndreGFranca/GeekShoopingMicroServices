@@ -19,7 +19,6 @@ namespace GeekShopping.ProductAPI.Controllers
             _repository = repository ?? throw new ArgumentException(nameof(repository));
         }
         [HttpGet]
-        [Authorize]
         public async Task<ActionResult<IEnumerable<ProductDTO>>> FindByAll()
         {
             var products = await _repository.FindAll();
