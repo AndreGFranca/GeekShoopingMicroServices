@@ -7,7 +7,7 @@ namespace GeekShopping.CartAPI.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class CartController : Controller
+    public class CartController : ControllerBase
     {
         private ICartRepository _repository;
 
@@ -36,7 +36,7 @@ namespace GeekShopping.CartAPI.Controllers
 
         }
 
-        [HttpPut("update-cart}")]
+        [HttpPut("update-cart")]
         public async Task<ActionResult<CartDTO>> UpdateCart(CartDTO dto)
         {
             var cart = await _repository.SaveOrUpdateCart(dto);
