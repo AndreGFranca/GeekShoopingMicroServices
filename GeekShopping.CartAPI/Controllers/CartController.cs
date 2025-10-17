@@ -50,7 +50,7 @@ namespace GeekShopping.CartAPI.Controllers
         public async Task<ActionResult<CartDTO>>RemoveCart(int id)
         {
             var status = await _repository.RemoveFromCart(id);
-            if (status)
+            if (!status)
                 return BadRequest();
             return Ok(status);
 
