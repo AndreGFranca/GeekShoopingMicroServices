@@ -18,6 +18,8 @@ namespace GeekShopping.CouponAPI.Repository
 
         public async Task<CouponDTO> GetCoupon(string couponCode, string token)
         {
+            if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                token = token.Substring("Bearer ".Length);
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var response = await _client.GetAsync($"/api/v1/coupon/{couponCode}");
             var content = await response.Content.ReadAsStringAsync();

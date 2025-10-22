@@ -36,7 +36,7 @@ namespace GeekShopping.CartAPI.Repository
         {
             var cartHeader = await _context.CartHeaders
                 .FirstOrDefaultAsync(c => c.UserID == userID);
-            if (cartHeader == null)
+            if (cartHeader != null)
             {
                 _context.CartDetails
                     .RemoveRange(
@@ -54,7 +54,7 @@ namespace GeekShopping.CartAPI.Repository
         {
             Cart cart = new()
             {
-                CartHeader = await _context.CartHeaders.FirstOrDefaultAsync(c => c.UserID == userID),
+                CartHeader = await _context.CartHeaders.FirstOrDefaultAsync(c => c.UserID == userID) ?? new CartHeader(),
             };
             cart.CartDetails = _context.CartDetails.Where(c => c.CartHeaderId == cart.CartHeader.Id)
                 .Include(c => c.Product);

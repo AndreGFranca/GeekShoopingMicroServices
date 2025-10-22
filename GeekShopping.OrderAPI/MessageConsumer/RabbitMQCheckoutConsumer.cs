@@ -1,6 +1,7 @@
 ﻿
 using GeekShopping.OrderAPI.Messages;
 using GeekShopping.OrderAPI.Models;
+using GeekShopping.OrderAPI.RabbitMQSender;
 using GeekShopping.OrderAPI.Repository;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -18,10 +19,13 @@ namespace GeekShopping.OrderAPI.MessageConsumer
         private readonly string _username;
         private IConnection _connection;
         private IModel _channel;
+        private IRabbitMQMessageSender _messageSender;
 
-        public RabbitMQCheckoutConsumer(OrderRepository orderRepository)
+        public RabbitMQCheckoutConsumer(OrderRepository orderRepository, IRabbitMQMessageSender messageSender)
         {
             _orderRepository = orderRepository;
+            _messageSender = messageSender;
+
             _hostName = "localhost";
             _password = "guest";
             _username = "guest";
@@ -86,6 +90,27 @@ namespace GeekShopping.OrderAPI.MessageConsumer
                 order.OrderDetails.Add(detail);
             }
             await _orderRepository.AddOrder(order);
+
+            PaymentDTO paymentDTO = new()
+            {
+                Name = order.FirstName + " " + order.LastName,
+                CardNumber = order.CardNumber,
+                CVV = order.CVV,
+                ExpiryMonthYear = order.ExpiryMonthYear,
+                OrderId = order.Id,
+                PurchaseAmount = order.PurchaseAmount,
+                Email = order.Email
+            };
+
+            try
+            {
+                _messageSender.Send(paymentDTO, "orderpaymentprocessqueue");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

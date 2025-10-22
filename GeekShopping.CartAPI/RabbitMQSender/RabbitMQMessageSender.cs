@@ -22,26 +22,21 @@ namespace GeekShopping.CartAPI.RabbitMQSender
 
         public void Send(BaseMessage message, string queueName)
         {
-            var factory = new ConnectionFactory
+            if (ConnectionExists())
             {
-                HostName = _hostName,
-                UserName = _username,
-                Password = _password,
-            };
-            // Conecta de forma assíncrona
-            _connection = factory.CreateConnection();
-            using var channel = _connection.CreateModel();
+                using var channel = _connection.CreateModel();
 
-            // Declara a fila de forma assíncrona
-            channel.QueueDeclare(queue: queueName, false, false, false, arguments: null);
+                // Declara a fila de forma assíncrona
+                channel.QueueDeclare(queue: queueName, false, false, false, arguments: null);
 
-            byte[] body = GetMessageAsByteArray(message);
+                byte[] body = GetMessageAsByteArray(message);
 
-            channel.BasicPublish(
-                exchange: "",
-                routingKey: queueName,
-                basicProperties: null,
-                body: body);
+                channel.BasicPublish(
+                    exchange: "",
+                    routingKey: queueName,
+                    basicProperties: null,
+                    body: body);
+            }
         }
 
         private byte[] GetMessageAsByteArray(BaseMessage message)
@@ -54,6 +49,33 @@ namespace GeekShopping.CartAPI.RabbitMQSender
             var body = Encoding.UTF8.GetBytes(json);
             return body;
 
+        }
+
+        private bool ConnectionExists()
+        {
+            if (_connection == null)
+                CreateConnection();
+            return _connection != null;
+        }
+
+        private void CreateConnection()
+        {
+            try
+            {
+                var factory = new ConnectionFactory
+                {
+                    HostName = _hostName,
+                    UserName = _username,
+                    Password = _password,
+                };
+                // Conecta de forma assíncrona
+                _connection = factory.CreateConnection();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
